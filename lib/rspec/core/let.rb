@@ -19,9 +19,20 @@ module RSpec
         #      thing.should be_something
         #    end
         #  end
+        #
+        # Under Ruby 1.9, you can also specify them using lambda literals in a hash :
+        #
+        # @example
+        #   let widget: -> {Thing.new},
+        #       gadget: -> {Thing.new}
+
         def let(name, &block)
-          define_method(name) do
-            __memoized.fetch(name) {|k| __memoized[k] = instance_eval(&block) }
+          if name.is_a?(Hash)
+            name.each{|k,v| let(k){v.call} }
+          else
+            define_method(name) do
+              __memoized.fetch(name) {|k| __memoized[k] = instance_eval(&block) }
+            end
           end
         end
 
@@ -80,8 +91,12 @@ module RSpec
         #    end
         #  end
         def let!(name, &block)
-          let(name, &block)
-          before { __send__(name) }
+          if name.is_a?(Hash)
+            name.each{|k,v| let!(k){v.call} }
+          else
+            let(name, &block)
+            before { __send__(name) }
+          end
         end
       end
 

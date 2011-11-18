@@ -17,6 +17,9 @@ describe "#let" do
     nil
   end
 
+  let foo: -> {1},
+      bar: -> {2}
+
   it "generates an instance method" do
     counter.count.should eq(1)
   end
@@ -33,6 +36,11 @@ describe "#let" do
 
     @nil_value_count.should eq(1)
   end
+
+  it "should allow multiple lets from a hash" do
+    foo.should eq(1)
+    bar.should eq(2)
+  end
 end
 
 describe "#let!" do
@@ -45,11 +53,20 @@ describe "#let!" do
     end
   end
 
+  let! foo: -> {1},
+       bar: -> {2}
+
   it "evaluates the value non-lazily" do
     lambda { creator.count }.should_not raise_error
   end
 
   it "does not interfere between tests" do
     creator.count.should eq(1)
+  end
+
+
+  it "should allow multiple let!s from a hash" do
+    foo.should eq(1)
+    bar.should eq(2)
   end
 end
